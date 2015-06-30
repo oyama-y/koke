@@ -3,10 +3,10 @@ CFLAGS = -O3
 LFLAGS = 
 KOKE = koke
 
-$(KOKE): main.o
+$(KOKE): main.o gamedata.o koke.o
 	$(CC) $(LFLAGS) $^ -o $(KOKE)
 
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $*.o
 
 clean:
