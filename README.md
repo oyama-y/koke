@@ -4,7 +4,7 @@ Cultivating moss(苔) game
 
 ## TODO
 
-- Growth
+- ~~Growth~~
 - Watering
  - Verious water/fertilizer type
 - Multiple moss
@@ -16,3 +16,4 @@ Cultivating moss(苔) game
 - Finance
  - Buying fertilizer and tools
  - Selling moss
+- autoconf
