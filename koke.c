@@ -20,8 +20,12 @@ char leafToChar(leaf_t leaf) {
 void newKoke(koke_t *koke_p) {
   int x, y;
   for(y = 0; y < KOKE_H; y++) 
-    for(x = 0; x < KOKE_W; x++) 
-      koke_p->leaves[x][y] = 0.0;
+    for(x = 0; x < KOKE_W; x++) {
+      leaf_t leaf = 0.0;
+      if(x == KOKE_W/2 && y == KOKE_H/2)
+	leaf = 1.0;
+      koke_p->leaves[x][y] = leaf;
+    }
 }
 
 void growKoke(koke_t *koke_p, double dms) {
