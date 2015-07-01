@@ -21,12 +21,15 @@ char leafToChar(leaf_t leaf) {
 }
 
 void newKoke(koke_t *koke_p) {
+  srand(time(NULL));
+  int xLeaf = rand()%KOKE_W;
+  int yLeaf = rand()%KOKE_H;
   int x, y;
-  for(y = 0; y < KOKE_H; y++) 
+  for(y = 0; y < KOKE_H; y++)
     for(x = 0; x < KOKE_W; x++) {
       leaf_t leaf = 0.0;
-      if(x == KOKE_W/2 && y == KOKE_H/2)
-	leaf = 1.0;
+      if(x == xLeaf && y == yLeaf)
+        leaf = 1.0;
       koke_p->leaves[x][y] = leaf;
     }
 }
