@@ -9,4 +9,6 @@
 #define MAGIC_LEN strlen(MAGIC)
 #define VERSION 0
 
+#define COLOR_KOKE 1
+
 #endif

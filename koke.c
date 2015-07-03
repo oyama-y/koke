@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 #include "koke.h"
+#include "config.h"
 
 #define LEAF_CHARS " .o+=*OSEB@"
 #define GROW_STEP_MS (1000*60*60)
@@ -18,6 +19,14 @@ char leafToChar(leaf_t leaf) {
     exit(1);
   }
   return LEAF_CHARS[index];
+}
+
+int leafToXtermColor(leaf_t leaf) {
+  int len = 5;
+  int grad = leaf*len;
+  if(grad == len)
+    grad = len-1;
+  return 22+grad*6;
 }
 
 void newKoke(koke_t *koke_p) {
@@ -86,8 +95,14 @@ void printKoke(koke_t *koke_p) {
       else {
 	leaf_t leaf = koke_p->leaves[x][y];
 	c = leafToChar(leaf);
+	if(COLOR_KOKE) {
+	  int color = leafToXtermColor(leaf);
+	  printf("\033[38;05;%dm", color);
+	}
       }
       printf("%c", c);
+      if(COLOR_KOKE)
+	printf("\033[0m");
     }
     printf("\n");
   }
