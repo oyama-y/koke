@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   time_t t;
   time(&t);
   
-  growKoke(&sv.koke, difftime(t, sv.lastTime));
+  growKoke(&sv.koke, difftime(t, sv.lastTime)*1000.0);
   printKoke(&sv.koke);
 
   sv.lastTime = t;
