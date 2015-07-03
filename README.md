@@ -17,4 +17,7 @@ Cultivating moss(苔) game
 - Finance
  - Buying fertilizer and tools
  - Selling moss
+- Objects
+ - Stone
+ - Creek
 - autoconf
