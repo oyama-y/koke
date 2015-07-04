@@ -8,6 +8,7 @@
 
 #define LEAF_CHARS " .o+=*OSEB@"
 #define GROW_STEP_MS (1000*60*60)
+#define WATER_MS     (1000*60*60*24*2)
 
 char leafToChar(leaf_t leaf) {
   int len = strlen(LEAF_CHARS);
@@ -44,6 +45,12 @@ void newKoke(koke_t *koke_p) {
 }
 
 void growKoke(koke_t *koke_p, double dms) {
+  double newWater = koke_p->water - dms/WATER_MS;
+  if(newWater < 0)
+    newWater = 0;
+  double avgWater = (koke_p->water+newWater)/2;
+  koke_p->water = newWater;
+
   srand(time(NULL));
   while(dms > 0) {
     double stepRatio = fmin(GROW_STEP_MS, dms)/GROW_STEP_MS;
@@ -73,6 +80,8 @@ void growKoke(koke_t *koke_p, double dms) {
 	else if(leafSum < 0.5 && presentLeaf >= 0.5)
 	  nextLeaf = 0.5;
 
+	nextLeaf *= avgWater;
+
 	koke_p->leaves[x][y] = presentLeaf*(1.0-stepRatio/2.0) + nextLeaf*stepRatio/2.0;
       }
     dms -= GROW_STEP_MS;
@@ -80,6 +89,7 @@ void growKoke(koke_t *koke_p, double dms) {
 }
 
 void waterKoke(koke_t *koke_p) {
+  koke_p->water = 1.0;
 }
 
 void printKoke(koke_t *koke_p) {

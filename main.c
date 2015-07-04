@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
     char *command = argv[1];
     if(strcmp(command, "water") == 0) {
       // Water
+      waterKoke(&sv.koke);
     }
   }
 
