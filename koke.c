@@ -93,19 +93,29 @@ void waterKoke(koke_t *koke_p) {
 }
 
 void printKoke(koke_t *koke_p) {
+  char tag[KOKE_W+1];
+  sprintf(tag, "[%d%%]", (int) (koke_p->water*100));
+  int tagLen = strlen(tag);
+
   int x, y;
   for(y = -1; y <= KOKE_H; y++) {
     for(x = -1; x <= KOKE_W; x++) {
       int xFrame = (x < 0) || (x >= KOKE_W);
       int yFrame = (y < 0) || (y >= KOKE_H);
       char c;
+      int inTag = 0;
       if(xFrame && yFrame)
 	c = '+';
       else if(xFrame)
 	c = '|';
-      else if(yFrame)
-	c = '-';
-      else {
+      else if(yFrame) {
+	int tagOffset = 1+KOKE_W/2-(tagLen+1)/2;
+	if(x >= tagOffset && x < tagOffset+tagLen && y == -1) {
+	  c = tag[x-tagOffset];
+	  inTag = 1;
+	} else
+	  c = '-';
+      } else {
 	leaf_t leaf = koke_p->leaves[x][y];
 	c = leafToChar(leaf);
 	if(COLOR_KOKE) {
@@ -113,6 +123,8 @@ void printKoke(koke_t *koke_p) {
 	  printf("\033[38;05;%dm", color);
 	}
       }
+      if(COLOR_KOKE && inTag)
+	printf("\033[1;38;05;27m");
       printf("%c", c);
       if(COLOR_KOKE)
 	printf("\033[0m");
