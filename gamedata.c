@@ -10,6 +10,7 @@
 int loadGame_file(gamedata_t *gamedata_p, FILE *file_p);
 int saveGame_file(gamedata_t *gamedata_p, FILE *file_p);
 FILE *openGameFile(const char *mode);
+void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_t *gamedata_new_p);
 
 void newGame(gamedata_t *gamedata_p) {
   time(&gamedata_p->lastTime);
@@ -65,15 +66,34 @@ int loadGame_file(gamedata_t *gamedata_p, FILE *file_p) {
   int version;
   if(fread(&version, sizeof(int), 1, file_p) != 1)
     return 1;
-  if(version != VERSION)
-    return 1;
 
   // Content
-  int len = sizeof(gamedata_t);
-  gamedata_t buffer;
-  if(fread(&buffer, len, 1, file_p) != 1)
+  int len;
+  if(version == 0)
+    len = sizeof(gamedata_0_t);
+  else if(version == VERSION)
+    len = sizeof(gamedata_t);
+  else
     return 1;
-  memcpy(gamedata_p, &buffer, sizeof(gamedata_t));
+
+  void *buffer = malloc(len);
+  if(buffer == NULL) {
+    printf("Memory allocation error\n");
+    exit(1);
+  }
+  if(fread(buffer, len, 1, file_p) != 1)
+    return 1;
+
+  if(version == 0) {
+    void *buffer_new = malloc(sizeof(gamedata_t));
+    gamedata_update_0(buffer, buffer_new);
+    free(buffer);
+    buffer = buffer_new;
+    printf("Gamedata version updated (0 -> 1)\n");
+  }
+
+  memcpy(gamedata_p, buffer, sizeof(gamedata_t));
+  free(buffer);
 
   if(fgetc(file_p) != EOF)
     return 1;
@@ -105,4 +125,9 @@ FILE *openGameFile(const char *mode) {
   FILE *file_p = fopen(path, mode);
   free(path);
   return file_p;
+}
+
+void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_t *gamedata_new_p) {
+  gamedata_new_p->lastTime = gamedata_old_p->lastTime;
+  koke_update_0(&gamedata_old_p->koke, &gamedata_new_p->koke);
 }

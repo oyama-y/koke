@@ -110,3 +110,8 @@ void printKoke(koke_t *koke_p) {
     printf("\n");
   }
 }
+
+void koke_update_0(const koke_0_t *koke_old_p, koke_t *koke_new_p) {
+  memcpy(koke_new_p->leaves, koke_old_p->leaves, sizeof(leaf_t)*KOKE_W*KOKE_H);
+  koke_new_p->water = 1.0;
+}
