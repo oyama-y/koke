@@ -12,6 +12,7 @@ typedef struct {
 
 void newKoke(koke_t *koke_p);
 void growKoke(koke_t *koke_p, double dms);
+void waterKoke(koke_t *koke_p);
 void printKoke(koke_t *koke_p);
 
 #endif
