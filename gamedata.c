@@ -10,7 +10,8 @@
 int loadGame_file(gamedata_t *gamedata_p, FILE *file_p);
 int saveGame_file(gamedata_t *gamedata_p, FILE *file_p);
 FILE *openGameFile(const char *mode);
-void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_t *gamedata_new_p);
+void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_1_t *gamedata_new_p);
+void gamedata_update_1(const gamedata_1_t *gamedata_old_p, gamedata_t   *gamedata_new_p);
 
 void newGame(gamedata_t *gamedata_p) {
   time(&gamedata_p->lastTime);
@@ -71,6 +72,8 @@ int loadGame_file(gamedata_t *gamedata_p, FILE *file_p) {
   int len;
   if(version == 0)
     len = sizeof(gamedata_0_t);
+  else if(version == 1)
+    len = sizeof(gamedata_1_t);
   else if(version == VERSION)
     len = sizeof(gamedata_t);
   else
@@ -85,11 +88,20 @@ int loadGame_file(gamedata_t *gamedata_p, FILE *file_p) {
     return 1;
 
   if(version == 0) {
-    void *buffer_new = malloc(sizeof(gamedata_t));
+    void *buffer_new = malloc(sizeof(gamedata_1_t));
     gamedata_update_0(buffer, buffer_new);
     free(buffer);
     buffer = buffer_new;
     printf("Gamedata version updated (0 -> 1)\n");
+    version++;
+  }
+  if(version == 1) {
+    void *buffer_new = malloc(sizeof(gamedata_t));
+    gamedata_update_1(buffer, buffer_new);
+    free(buffer);
+    buffer = buffer_new;
+    printf("Gamedata version updated (1 -> 2)\n");
+    version++;
   }
 
   memcpy(gamedata_p, buffer, sizeof(gamedata_t));
@@ -127,7 +139,12 @@ FILE *openGameFile(const char *mode) {
   return file_p;
 }
 
-void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_t *gamedata_new_p) {
+void gamedata_update_0(const gamedata_0_t *gamedata_old_p, gamedata_1_t *gamedata_new_p) {
   gamedata_new_p->lastTime = gamedata_old_p->lastTime;
   koke_update_0(&gamedata_old_p->koke, &gamedata_new_p->koke);
+}
+
+void gamedata_update_1(const gamedata_1_t *gamedata_old_p, gamedata_t *gamedata_new_p) {
+  gamedata_new_p->lastTime = gamedata_old_p->lastTime;
+  koke_update_1(&gamedata_old_p->koke, &gamedata_new_p->koke);
 }

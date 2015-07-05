@@ -10,6 +10,11 @@ typedef struct {
 
 typedef struct {
   time_t lastTime;
+  koke_1_t koke;
+} gamedata_1_t;
+
+typedef struct {
+  time_t lastTime;
   koke_0_t koke;
 } gamedata_0_t;
 
