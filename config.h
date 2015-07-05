@@ -7,7 +7,7 @@
 // Gamedata 
 #define MAGIC "koke"
 #define MAGIC_LEN strlen(MAGIC)
-#define VERSION 1
+#define VERSION 2
 
 #define COLOR_KOKE 1
 

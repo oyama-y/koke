@@ -34,14 +34,15 @@ void newKoke(koke_t *koke_p) {
   srand(time(NULL));
   int xLeaf = rand()%KOKE_W;
   int yLeaf = rand()%KOKE_H;
-  int x, y;
-  for(y = 0; y < KOKE_H; y++)
-    for(x = 0; x < KOKE_W; x++) {
-      leaf_t leaf = 0.0;
-      if(x == xLeaf && y == yLeaf)
-        leaf = 1.0;
-      koke_p->leaves[x][y] = leaf;
-    }
+  int type, x, y;
+  for(type = 0; type < KOKE_TYPE; type++)
+    for(y = 0; y < KOKE_H; y++)
+      for(x = 0; x < KOKE_W; x++) {
+	leaf_t leaf = 0.0;
+	if(type == KOKE_SUGI && x == xLeaf && y == yLeaf)
+	  leaf = 1.0;
+	koke_p->leaves[type][x][y] = leaf;
+      }
 }
 
 void growKoke(koke_t *koke_p, double dms) {
@@ -54,36 +55,37 @@ void growKoke(koke_t *koke_p, double dms) {
   srand(time(NULL));
   while(dms > 0) {
     double stepRatio = fmin(GROW_STEP_MS, dms)/GROW_STEP_MS;
-    leaf_t leaves[KOKE_W][KOKE_H];
-    memcpy(leaves, koke_p->leaves, sizeof(leaf_t)*KOKE_W*KOKE_H);
-    int x, y;
-    for(y = 0; y < KOKE_H; y++)
-      for(x = 0; x < KOKE_W; x++) {
-	leaf_t leafSum = 0.0;
-	{
-	  int dx, dy;
-	  for(dx = -1; dx <= 1; dx++)
-	    for(dy = -1; dy <= 1; dy++) {
-	      if(dx == 0 && dy == 0)
-		continue;
-	      int lx = x+dx;
-	      int ly = y+dy;
-	      if(lx >= 0 && ly >= 0 && lx < KOKE_W && ly < KOKE_H)
-		leafSum += leaves[lx][ly];
-	    }
+    leaf_t leaves[KOKE_TYPE][KOKE_W][KOKE_H];
+    memcpy(leaves, koke_p->leaves, sizeof(leaf_t)*KOKE_TYPE*KOKE_W*KOKE_H);
+    int type, x, y;
+    for(type = 0; type < KOKE_TYPE; type++)
+      for(y = 0; y < KOKE_H; y++)
+	for(x = 0; x < KOKE_W; x++) {
+	  leaf_t leafSum = 0.0;
+	  {
+	    int dx, dy;
+	    for(dx = -1; dx <= 1; dx++)
+	      for(dy = -1; dy <= 1; dy++) {
+		if(dx == 0 && dy == 0)
+		  continue;
+		int lx = x+dx;
+		int ly = y+dy;
+		if(lx >= 0 && ly >= 0 && lx < KOKE_W && ly < KOKE_H)
+		  leafSum += leaves[type][lx][ly];
+	      }
+	  }
+
+	  leaf_t presentLeaf = leaves[type][x][y];
+	  leaf_t nextLeaf = 0.0;
+	  if(leafSum >= 0.5 && leafSum < 3.5)
+	    nextLeaf = drand48()/2.0+0.5;
+	  else if(leafSum < 0.5 && presentLeaf >= 0.5)
+	    nextLeaf = 0.5;
+
+	  nextLeaf *= avgWater;
+
+	  koke_p->leaves[type][x][y] = presentLeaf*(1.0-stepRatio/2.0) + nextLeaf*stepRatio/2.0;
 	}
-
-	leaf_t presentLeaf = leaves[x][y];
-	leaf_t nextLeaf = 0.0;
-	if(leafSum >= 0.5 && leafSum < 3.5)
-	  nextLeaf = drand48()/2.0+0.5;
-	else if(leafSum < 0.5 && presentLeaf >= 0.5)
-	  nextLeaf = 0.5;
-
-	nextLeaf *= avgWater;
-
-	koke_p->leaves[x][y] = presentLeaf*(1.0-stepRatio/2.0) + nextLeaf*stepRatio/2.0;
-      }
     dms -= GROW_STEP_MS;
   }
 }
@@ -97,7 +99,7 @@ void printKoke(koke_t *koke_p) {
   sprintf(tag, "[%d%%]", (int) (koke_p->water*100));
   int tagLen = strlen(tag);
 
-  int x, y;
+  int type, x, y;
   for(y = -1; y <= KOKE_H; y++) {
     for(x = -1; x <= KOKE_W; x++) {
       int xFrame = (x < 0) || (x >= KOKE_W);
@@ -116,7 +118,7 @@ void printKoke(koke_t *koke_p) {
 	} else
 	  c = '-';
       } else {
-	leaf_t leaf = koke_p->leaves[x][y];
+	leaf_t leaf = koke_p->leaves[KOKE_SUGI][x][y];
 	c = leafToChar(leaf);
 	if(COLOR_KOKE) {
 	  int color = leafToXtermColor(leaf);
@@ -133,7 +135,16 @@ void printKoke(koke_t *koke_p) {
   }
 }
 
-void koke_update_0(const koke_0_t *koke_old_p, koke_t *koke_new_p) {
+void koke_update_0(const koke_0_t *koke_old_p, koke_1_t *koke_new_p) {
   memcpy(koke_new_p->leaves, koke_old_p->leaves, sizeof(leaf_t)*KOKE_W*KOKE_H);
   koke_new_p->water = 1.0;
+}
+
+void koke_update_1(const koke_1_t *koke_old_p, koke_t *koke_new_p) {
+  int type, x, y;
+  for(type = 0; type < KOKE_TYPE; type++)
+    for(y = 0; y < KOKE_H; y++)
+      for(x = 0; x < KOKE_W; x++)
+	koke_new_p->leaves[type][x][y] = (type == 0 ? koke_old_p->leaves[x][y] : 0.0);
+  koke_new_p->water = koke_old_p->water;
 }
