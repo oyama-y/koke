@@ -5,7 +5,7 @@ Cultivating moss(苔) game
 ## TODO
 
 - ~~Growth~~
-- Watering
+- ~~Watering~~
  - Verious water/fertilizer type
 - Multiple moss
 - Multibple seedbed
