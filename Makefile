@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -O3
-LFLAGS = 
+CFLAGS = -O3 -Wall
+LFLAGS = -Wall
 KOKE = koke
 
 $(KOKE): main.o gamedata.o koke.o
