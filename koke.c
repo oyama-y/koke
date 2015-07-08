@@ -10,9 +10,28 @@
 #define GROW_STEP_MS (1000*60*60)
 #define WATER_MS     (1000*60*60*24*2)
 
-char leafToChar(leaf_t leaf) {
+int rgbToXtermColor(double r, double g, double b) {
+  int rGrad = r*6.0;
+  int gGrad = g*6.0;
+  int bGrad = b*6.0;
+  if(rGrad == 6) rGrad = 5;
+  if(gGrad == 6) gGrad = 5;
+  if(bGrad == 6) bGrad = 5;
+  return 16 + rGrad*6*6 + gGrad*6 + bGrad;
+}
+
+char leafToChar(leaf_t* leaves) {
+  leaf_t leafMax = 0.0;
+  {
+    int type;
+    for(type = 0; type < KOKE_TYPE; type++) {
+      leaf_t leaf = leaves[type];
+      if(leaf > leafMax)
+	leafMax = leaf;
+    }
+  }
   int len = strlen(LEAF_CHARS);
-  int index = leaf*len;
+  int index = leafMax*len;
   if(index == len)
     index = len-1;
   if(index < 0 || index > len) {
@@ -22,12 +41,14 @@ char leafToChar(leaf_t leaf) {
   return LEAF_CHARS[index];
 }
 
-int leafToXtermColor(leaf_t leaf) {
-  int len = 5;
-  int grad = leaf*len;
-  if(grad == len)
-    grad = len-1;
-  return 22+grad*6;
+int leafToXtermColor(leaf_t* leaves) {
+  leaf_t l_sugi = leaves[KOKE_SUGI];
+  leaf_t l_siraga = leaves[KOKE_SIRAGA];
+  leaf_t l_hikari = leaves[KOKE_HIKARI];
+  double r = fmax(l_siraga, l_hikari);
+  double g = fmax(l_sugi, fmax(l_siraga, l_hikari));
+  double b = l_hikari;
+  return rgbToXtermColor(r, g, b);
 }
 
 void newKoke(koke_t *koke_p) {
@@ -99,7 +120,7 @@ void printKoke(koke_t *koke_p) {
   sprintf(tag, "[%d%%]", (int) (koke_p->water*100));
   int tagLen = strlen(tag);
 
-  int type, x, y;
+  int x, y;
   for(y = -1; y <= KOKE_H; y++) {
     for(x = -1; x <= KOKE_W; x++) {
       int xFrame = (x < 0) || (x >= KOKE_W);
@@ -118,10 +139,13 @@ void printKoke(koke_t *koke_p) {
 	} else
 	  c = '-';
       } else {
-	leaf_t leaf = koke_p->leaves[KOKE_SUGI][x][y];
-	c = leafToChar(leaf);
+	leaf_t leaves[KOKE_TYPE];
+	int type;
+	for(type = 0; type < KOKE_TYPE; type++)
+	  leaves[type] = koke_p->leaves[type][x][y];
+	c = leafToChar(leaves);
 	if(COLOR_KOKE) {
-	  int color = leafToXtermColor(leaf);
+	  int color = leafToXtermColor(leaves);
 	  printf("\033[38;05;%dm", color);
 	}
       }
